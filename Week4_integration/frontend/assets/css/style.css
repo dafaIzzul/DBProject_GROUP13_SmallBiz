@@ -16,6 +16,11 @@ body {
   color: #333;
 }
 
+span {
+  margin-right: 20px;
+  font-family: 'Avenir', sans-serif;
+}
+
 /* Container */
 .container {
   max-width: 1200px;
@@ -25,7 +30,7 @@ body {
 
 /* Navbar */
 .navbar {
-  background-color: #2196F3;
+  background: linear-gradient(135deg, #09071f 0%, #201030 100%);
   color: white;
   padding: 15px 20px;
   display: flex;
