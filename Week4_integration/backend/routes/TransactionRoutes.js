@@ -5,16 +5,11 @@ const router = express.Router();
 const transactionController = require('../controllers/transactionController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
-// All authenticated users can view
 router.get('/', authenticateToken, transactionController.getAllTransactions);
 router.get('/date-range', authenticateToken, transactionController.getTransactionsByDateRange);
 router.get('/:id', authenticateToken, transactionController.getTransactionById);
 router.get('/:id/details', authenticateToken, transactionController.getTransactionDetails);
-
-// All roles can create transactions (cashiers need this!)
 router.post('/create', authenticateToken, transactionController.createTransaction);
-
-// Admin & Manager can cancel
 router.put('/:id/cancel', authenticateToken, authorizeRole(['Admin', 'Manager']), transactionController.cancelTransaction);
 
 module.exports = router;

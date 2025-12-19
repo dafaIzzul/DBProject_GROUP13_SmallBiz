@@ -5,7 +5,6 @@ const router = express.Router();
 const supplierController = require('../controllers/supplierController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
-// Admin & Manager only
 router.get('/', authenticateToken, authorizeRole(['Admin', 'Manager']), supplierController.getAllSuppliers);
 router.get('/search/:query', authenticateToken, authorizeRole(['Admin', 'Manager']), supplierController.searchSuppliers);
 router.get('/:id', authenticateToken, authorizeRole(['Admin', 'Manager']), supplierController.getSupplierById);

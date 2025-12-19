@@ -5,7 +5,6 @@ const router = express.Router();
 const purchaseController = require('../controllers/purchaseController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
-// Admin & Manager only (cashiers don't handle purchases)
 router.get('/', authenticateToken, authorizeRole(['Admin', 'Manager']), purchaseController.getAllPurchases);
 router.get('/date-range', authenticateToken, authorizeRole(['Admin', 'Manager']), purchaseController.getPurchasesByDateRange);
 router.get('/supplier/:supplierId', authenticateToken, authorizeRole(['Admin', 'Manager']), purchaseController.getPurchasesBySupplier);

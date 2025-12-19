@@ -1,4 +1,4 @@
-// AUTHENTICATION CONTROLLER (NO PASSWORD ENCRYPTION)
+// AUTHENTICATION CONTROLLER (PLAIN TEXT PASSWORD)
 
 const { query } = require('../config/database');
 const jwt = require('jsonwebtoken');
@@ -33,7 +33,7 @@ const login = async (req, res) => {
 
     const user = users[0];
 
-    // Compare password (PLAIN TEXT)
+    // Compare password (PLAIN TEXT - no encryption)
     if (password !== user.Password) {
       return res.status(401).json({
         success: false,
@@ -54,8 +54,8 @@ const login = async (req, res) => {
         username: user.Username,
         role: user.Role
       },
-      process.env.JWT_SECRET || 'your_secret_key',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET || 'your_secret_key_change_this_in_production_123456789',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
 
     res.json({
@@ -114,7 +114,7 @@ const getCurrentUser = async (req, res) => {
 };
 
 // -------------------------
-// REGISTER USER (NO ENCRYPTION)
+// REGISTER USER (PLAIN TEXT PASSWORD)
 // -------------------------
 const register = async (req, res) => {
   try {
@@ -156,7 +156,7 @@ const register = async (req, res) => {
       });
     }
 
-    // Insert (NO HASHING)
+    // Insert with PLAIN TEXT password (no hashing)
     const result = await query(
       'INSERT INTO User (Username, Password, Role) VALUES (?, ?, ?)',
       [username, password, role]
@@ -183,7 +183,7 @@ const register = async (req, res) => {
 };
 
 // -------------------------
-// CHANGE PASSWORD (NO ENCRYPTION)
+// CHANGE PASSWORD (PLAIN TEXT)
 // -------------------------
 const changePassword = async (req, res) => {
   try {
@@ -218,7 +218,7 @@ const changePassword = async (req, res) => {
 
     const user = users[0];
 
-    // Verify old password (PLAIN TEXT)
+    // Verify old password (PLAIN TEXT comparison)
     if (oldPassword !== user.Password) {
       return res.status(401).json({
         success: false,
@@ -226,7 +226,7 @@ const changePassword = async (req, res) => {
       });
     }
 
-    // Update password (PLAIN TEXT)
+    // Update password (PLAIN TEXT - no hashing)
     await query(
       'UPDATE User SET Password = ? WHERE User_ID = ?',
       [newPassword, req.user.userId]

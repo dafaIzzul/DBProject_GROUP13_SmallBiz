@@ -8,9 +8,9 @@ INSERT INTO Category (Category_Name, Description) VALUES
 
 -- Users (Password: 'admin123' hashed with bcrypt)
 INSERT INTO User (Username, Password, Role) VALUES
-('admin', '$2b$10$rQ5xVJZ9V5CqXYZ9V5CqXe', 'Admin'),
-('manager1', '$2b$10$rQ5xVJZ9V5CqXYZ9V5CqXe', 'Manager'),
-('cashier1', '$2b$10$rQ5xVJZ9V5CqXYZ9V5CqXe', 'Cashier');
+('admin', 'admin123', 'Admin'),
+('manager1', 'manager123', 'Manager'),
+('cashier1', 'cashier123', 'Cashier');
 
 -- Suppliers
 INSERT INTO Supplier (Name, Contact, Phone, Email, Address) VALUES

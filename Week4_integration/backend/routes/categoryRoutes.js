@@ -5,15 +5,10 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
-// Public/All authenticated users
-router.get('/', categoryController.getAllCategories);
-router.get('/:id', categoryController.getCategoryById);
-
-// Admin & Manager only
+router.get('/', authenticateToken, categoryController.getAllCategories);
+router.get('/:id', authenticateToken, categoryController.getCategoryById);
 router.post('/', authenticateToken, authorizeRole(['Admin', 'Manager']), categoryController.createCategory);
 router.put('/:id', authenticateToken, authorizeRole(['Admin', 'Manager']), categoryController.updateCategory);
-
-// Admin only
 router.delete('/:id', authenticateToken, authorizeRole(['Admin']), categoryController.deleteCategory);
 
 module.exports = router;

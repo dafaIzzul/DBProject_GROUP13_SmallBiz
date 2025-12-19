@@ -1,23 +1,14 @@
-// ============================================
-// API HELPER FUNCTIONS
-// assets/js/api.js
-// Reusable functions for making API calls
-// ============================================
-
 const API_URL = 'http://localhost:3000/api';
 
-// Get token from localStorage
 function getToken() {
     return localStorage.getItem('token');
 }
 
-// Get user info from localStorage
 function getUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
-// Check if user is logged in
 function isLoggedIn() {
     return !!getToken();
 }
@@ -286,4 +277,96 @@ function showLoading(show = true) {
 // Confirm action
 function confirmAction(message) {
     return confirm(message);
-}
+}const API_BASE_URL = 'http://localhost:3000/api';
+
+const getToken = () => {
+  return localStorage.getItem('token');
+};
+
+const apiCall = async (endpoint, options = {}) => {
+  const token = getToken();
+  
+  const config = {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+      ...options.headers
+    }
+  };
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'API call failed');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
+
+// Auth API
+const auth = {
+  login: (credentials) => apiCall('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials)
+  }),
+  
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '../login.html';
+  },
+  
+  getCurrentUser: () => apiCall('/auth/me')
+};
+
+// Products API
+const products = {
+  getAll: () => apiCall('/products'),
+  getById: (id) => apiCall(`/products/${id}`),
+  getLowStock: () => apiCall('/products/low-stock'),
+  search: (query) => apiCall(`/products/search/${query}`),
+  create: (data) => apiCall('/products', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  update: (id, data) => apiCall(`/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+  delete: (id) => apiCall(`/products/${id}`, {
+    method: 'DELETE'
+  })
+};
+
+// Transactions API
+const transactions = {
+  getAll: () => apiCall('/transactions'),
+  getById: (id) => apiCall(`/transactions/${id}`),
+  getDetails: (id) => apiCall(`/transactions/${id}/details`),
+  getByDateRange: (startDate, endDate) => 
+    apiCall(`/transactions/date-range?startDate=${startDate}&endDate=${endDate}`),
+  create: (data) => apiCall('/transactions', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  cancel: (id) => apiCall(`/transactions/${id}/cancel`, {
+    method: 'PUT'
+  })
+};
+
+// Categories, Customers, Suppliers - similar pattern
+const categories = {
+  getAll: () => apiCall('/categories'),
+  create: (data) => apiCall('/categories', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => apiCall(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => apiCall(`/categories/${id}`, { method: 'DELETE' })
+};
+
+export { auth, products, transactions, categories };

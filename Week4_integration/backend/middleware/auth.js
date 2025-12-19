@@ -1,8 +1,3 @@
-// ============================================
-// AUTHENTICATION & AUTHORIZATION MIDDLEWARE
-// middleware/auth.js
-// ============================================
-
 const jwt = require('jsonwebtoken');
 
 // Verify JWT token
