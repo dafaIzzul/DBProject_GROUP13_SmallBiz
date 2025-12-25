@@ -27,9 +27,12 @@ Nama Anggota:
 ## 📸 Screenshots
 
 
-| Login Page | Dashboard Inventory | Halaman Kasir |
-|<img width="1365" height="685" alt="Screenshot 2025-12-25 104436" src="https://github.com/user-attachments/assets/1eae43d9-f564-461b-b3c3-1095316903b9" /> |  <img width="1365" height="684" alt="Screenshot 2025-12-25 104820" src="https://github.com/user-attachments/assets/2a999ac4-1be9-445f-a64d-ac611278d630" /> | <img width="1365" height="671" alt="Screenshot 2025-12-25 111119" src="https://github.com/user-attachments/assets/b4dcd132-6dcc-4339-920c-04541ec45a05" />|
-|  |  |  |
+| Login Page | 
+<img width="1365" height="685" alt="Screenshot 2025-12-25 104436" src="https://github.com/user-attachments/assets/1eae43d9-f564-461b-b3c3-1095316903b9" /> 
+| Dashboard Inventory | 
+<img width="1365" height="684" alt="Screenshot 2025-12-25 104820" src="https://github.com/user-attachments/assets/2a999ac4-1be9-445f-a64d-ac611278d630" /> 
+| Halaman Kasir |
+<img width="1365" height="671" alt="Screenshot 2025-12-25 111119" src="https://github.com/user-attachments/assets/b4dcd132-6dcc-4339-920c-04541ec45a05" />
 
 ## 🚀 Cara Instalasi & Menjalankan (Localhost)
 
