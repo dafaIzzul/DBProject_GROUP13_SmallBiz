@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="products.html">Products</a>
+            <a href="users.html">Users</a>
+            <a href="reports.html">Reports</a>
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Dashboard Overview</h1>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Pendapatan</h3>
+                <p class="stat-value" id="totalRevenue">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Produk</h3>
+                <p class="stat-value" id="totalProducts">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/api.js"></script>
+    <script>
+        checkRole(['Admin']); // Proteksi Halaman
+        
+        // Simple logic to fetch stats (Mockup logic based on your api)
+        async function loadStats() {
+            try {
+                const products = await fetch('http://localhost:3000/api/products', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }).then(r => r.json());
+                
+                document.getElementById('totalProducts').innerText = products.count || 0;
+                
+                // Note: Total Revenue biasanya butuh endpoint khusus laporan, 
+                // disini kita set placeholder atau hitung manual dari transaksi
+                document.getElementById('totalRevenue').innerText = "Rp -"; 
+            } catch (e) { console.error(e); }
+        }
+        loadStats();
+    </script>
+</body>
+</html>

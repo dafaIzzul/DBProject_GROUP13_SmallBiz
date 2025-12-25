@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cashier Dashboard - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz POS</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="pos.html">POS System</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Halo, Kasir!</h1>
+        <p>Selamat bertugas. Silakan masuk ke menu POS untuk memulai transaksi.</p>
+        
+        <div style="margin-top: 20px;">
+            <a href="pos.html" class="btn-primary" style="padding: 15px 30px; text-decoration: none;">
+                Buka Mesin Kasir (POS)
+            </a>
+        </div>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+        checkRole(['Cashier', 'Admin', 'Manager']);
+    </script>
+</body>
+</html>

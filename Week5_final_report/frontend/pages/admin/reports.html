@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="products.html">Products</a>
+            <a href="users.html">Users</a>
+            <a href="reports.html" class="active">Reports</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Laporan Transaksi</h1>
+        <p>Menampilkan 100 transaksi terakhir.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tanggal</th>
+                    <th>Kasir</th>
+                    <th>Total</th>
+                    <th>Metode</th>
+                </tr>
+            </thead>
+            <tbody id="reportTable"></tbody>
+        </table>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+        checkRole(['Admin']);
+
+        async function loadReports() {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:3000/api/transactions', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            const tbody = document.getElementById('reportTable');
+            data.data.forEach(t => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${t.Transaction_ID}</td>
+                        <td>${new Date(t.Date).toLocaleString()}</td>
+                        <td>${t.Cashier_Name}</td>
+                        <td>Rp ${t.Total_Amount}</td>
+                        <td>${t.Payment_Method}</td>
+                    </tr>
+                `;
+            });
+        }
+        loadReports();
+    </script>
+</body>
+</html>
