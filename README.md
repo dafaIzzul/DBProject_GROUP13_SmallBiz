@@ -122,23 +122,3 @@ Gunakan akun berikut untuk mencoba sistem:
   ├── assets/       # CSS & JS
   └── pages/        # Halaman HTML per Role
 
-```
-
-## 📄 Laporan Proyek
-
-Laporan lengkap mengenai analisis, perancangan, dan hasil pengujian sistem ini dapat dilihat pada file [Final_Report_SmallBiz.docx](https://www.google.com/search?q=./Final_Report_SmallBiz.docx) yang disertakan dalam repository ini.
-
----
-
-**Dibuat oleh:** [Nama Kelompok/Nama Anda]
-
----
-
-## (Akhir Copy)
-
-### Tips Tambahan untuk GitHub:
-
-1. **Screenshots:** Agar bagian "Screenshots" di atas berfungsi, Anda perlu mengambil *screenshot* aplikasi Anda (Login, Inventory, Kasir), simpan gambar tersebut dalam folder baru di proyek Anda (misalnya folder `screenshots/`), lalu ganti tulisan `path/to/image1.png` dengan lokasi gambar yang sebenarnya, misal `screenshots/login.png`.
-2. **Upload Laporan:** Pastikan file `.docx` laporan Anda juga ikut di-upload ke GitHub agar link di bagian bawah README berfungsi.
-
-Dengan README seperti ini, repositori Anda akan terlihat sangat profesional dan siapa pun (termasuk dosen) akan mudah menilai pekerjaan Anda!
