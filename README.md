@@ -6,27 +6,6 @@ Nama Anggota:
 1. Muhammad Dafa 'Izzul Iman A. (24/535342/PA/22711)
 2. Ivan Zuhri Ramadhani Syahrial (24/540342/PA/22939)
 
-### Apa itu `README.md`?
-
-**README.md** adalah file teks dengan format *Markdown* (itu sebabnya berakhiran `.md`) yang akan ditampilkan secara otomatis di halaman depan repository GitHub Anda.
-
-**Fungsinya adalah:**
-
-1. **Identitas:** Memberi tahu orang lain (atau rekruter) apa nama proyek ini.
-2. **Instruksi:** Memberi tahu cara menginstal dan menjalankan program di komputer mereka.
-3. **Dokumentasi:** Menjelaskan fitur-fitur utama dan teknologi yang digunakan.
-4. **Portfolio:** Bagi mahasiswa/developer, README yang rapi menunjukkan profesionalisme.
-
----
-
-### Isi README untuk Proyek SmallBiz
-
-Karena saya sudah tahu detail proyek Anda, saya telah membuatkan **Template README** yang lengkap. Anda tinggal membuat file bernama `README.md` (huruf besar semua), lalu **Copy-Paste** isi di bawah ini ke dalamnya.
-
----
-
-## (Copy dari sini ke bawah)
-
 # 📦 SmallBiz - Inventory Management System
 
 **SmallBiz** adalah aplikasi berbasis web untuk manajemen inventaris dan *Point of Sales* (POS) yang dirancang untuk Usaha Kecil Menengah (UKM). Sistem ini membantu pemilik bisnis memantau stok secara real-time, mencatat transaksi penjualan, dan mengelola pembelian ke supplier dengan akurat.
@@ -37,7 +16,6 @@ Karena saya sudah tahu detail proyek Anda, saya telah membuatkan **Template READ
 * **Real-time Inventory Tracking:** Status stok otomatis berubah warna (Hijau/Kuning/Merah) berdasarkan jumlah ketersediaan.
 * **Point of Sales (POS):** Kasir dapat melakukan transaksi penjualan yang otomatis memotong stok database.
 * **Restocking System:** Manager dapat mencatat pembelian barang masuk dari supplier.
-* **Secure Authentication:** Menggunakan JSON Web Token (JWT) untuk keamanan sesi login.
 
 ## 🛠️ Teknologi yang Digunakan
 
@@ -48,11 +26,13 @@ Karena saya sudah tahu detail proyek Anda, saya telah membuatkan **Template READ
 
 ## 📸 Screenshots
 
-*(Opsional: Anda bisa memasukkan gambar/screenshot aplikasi di sini nanti)*
 
-| Login Page | Dashboard Inventory | Halaman Kasir |
-| --- | --- | --- |
-|  |  |  |
+| Login Page | 
+<img width="1365" height="685" alt="Screenshot 2025-12-25 104436" src="https://github.com/user-attachments/assets/1eae43d9-f564-461b-b3c3-1095316903b9" /> 
+| Dashboard Inventory | 
+<img width="1365" height="684" alt="Screenshot 2025-12-25 104820" src="https://github.com/user-attachments/assets/2a999ac4-1be9-445f-a64d-ac611278d630" /> 
+| Halaman Kasir |
+<img width="1365" height="671" alt="Screenshot 2025-12-25 111119" src="https://github.com/user-attachments/assets/b4dcd132-6dcc-4339-920c-04541ec45a05" />
 
 ## 🚀 Cara Instalasi & Menjalankan (Localhost)
 
@@ -60,7 +40,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di komputer Anda:
 
 ### 1. Prasyarat
 
-Pastikan Anda sudah menginstal:
+Pastikan sudah menginstal:
 
 * [Node.js](https://nodejs.org/)
 * MySQL (bisa via XAMPP atau MySQL Workbench)
@@ -128,8 +108,8 @@ Gunakan akun berikut untuk mencoba sistem:
 | Role | Username | Password | Akses Fitur |
 | --- | --- | --- | --- |
 | **Admin** | `admin` | `admin123` | Kelola User |
-| **Manager** | `manager` | `manager123` | Inventaris, Pembelian |
-| **Cashier** | `kasir` | `kasir123` | Transaksi Penjualan |
+| **Manager** | `manager` | `admin123` | Inventaris, Pembelian |
+| **Cashier** | `cashier` | `admin123` | Transaksi Penjualan |
 
 ## 📂 Struktur Folder
 
@@ -139,27 +119,9 @@ Gunakan akun berikut untuk mencoba sistem:
   ├── controllers/  # Logika Bisnis
   ├── routes/       # API Endpoints
   └── server.js     # Entry Point
+/database
+  └── schema.sql    # schema database 
 /frontend
   ├── assets/       # CSS & JS
   └── pages/        # Halaman HTML per Role
 
-```
-
-## 📄 Laporan Proyek
-
-Laporan lengkap mengenai analisis, perancangan, dan hasil pengujian sistem ini dapat dilihat pada file [Final_Report_SmallBiz.docx](https://www.google.com/search?q=./Final_Report_SmallBiz.docx) yang disertakan dalam repository ini.
-
----
-
-**Dibuat oleh:** [Nama Kelompok/Nama Anda]
-
----
-
-## (Akhir Copy)
-
-### Tips Tambahan untuk GitHub:
-
-1. **Screenshots:** Agar bagian "Screenshots" di atas berfungsi, Anda perlu mengambil *screenshot* aplikasi Anda (Login, Inventory, Kasir), simpan gambar tersebut dalam folder baru di proyek Anda (misalnya folder `screenshots/`), lalu ganti tulisan `path/to/image1.png` dengan lokasi gambar yang sebenarnya, misal `screenshots/login.png`.
-2. **Upload Laporan:** Pastikan file `.docx` laporan Anda juga ikut di-upload ke GitHub agar link di bagian bawah README berfungsi.
-
-Dengan README seperti ini, repositori Anda akan terlihat sangat profesional dan siapa pun (termasuk dosen) akan mudah menilai pekerjaan Anda!
