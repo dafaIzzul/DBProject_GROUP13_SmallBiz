@@ -16,7 +16,6 @@ Nama Anggota:
 * **Real-time Inventory Tracking:** Status stok otomatis berubah warna (Hijau/Kuning/Merah) berdasarkan jumlah ketersediaan.
 * **Point of Sales (POS):** Kasir dapat melakukan transaksi penjualan yang otomatis memotong stok database.
 * **Restocking System:** Manager dapat mencatat pembelian barang masuk dari supplier.
-* **Secure Authentication:** Menggunakan JSON Web Token (JWT) untuk keamanan sesi login.
 
 ## 🛠️ Teknologi yang Digunakan
 
@@ -27,10 +26,9 @@ Nama Anggota:
 
 ## 📸 Screenshots
 
-*(Opsional: Anda bisa memasukkan gambar/screenshot aplikasi di sini nanti)*
 
 | Login Page | Dashboard Inventory | Halaman Kasir |
-| --- | --- | --- |
+|<img width="1365" height="685" alt="Screenshot 2025-12-25 104436" src="https://github.com/user-attachments/assets/1eae43d9-f564-461b-b3c3-1095316903b9" /> |  <img width="1365" height="684" alt="Screenshot 2025-12-25 104820" src="https://github.com/user-attachments/assets/2a999ac4-1be9-445f-a64d-ac611278d630" /> | <img width="1365" height="671" alt="Screenshot 2025-12-25 111119" src="https://github.com/user-attachments/assets/b4dcd132-6dcc-4339-920c-04541ec45a05" />|
 |  |  |  |
 
 ## 🚀 Cara Instalasi & Menjalankan (Localhost)
@@ -39,7 +37,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di komputer Anda:
 
 ### 1. Prasyarat
 
-Pastikan Anda sudah menginstal:
+Pastikan sudah menginstal:
 
 * [Node.js](https://nodejs.org/)
 * MySQL (bisa via XAMPP atau MySQL Workbench)
@@ -107,8 +105,8 @@ Gunakan akun berikut untuk mencoba sistem:
 | Role | Username | Password | Akses Fitur |
 | --- | --- | --- | --- |
 | **Admin** | `admin` | `admin123` | Kelola User |
-| **Manager** | `manager` | `manager123` | Inventaris, Pembelian |
-| **Cashier** | `kasir` | `kasir123` | Transaksi Penjualan |
+| **Manager** | `manager` | `admin123` | Inventaris, Pembelian |
+| **Cashier** | `cashier` | `admin123` | Transaksi Penjualan |
 
 ## 📂 Struktur Folder
 
@@ -118,6 +116,8 @@ Gunakan akun berikut untuk mencoba sistem:
   ├── controllers/  # Logika Bisnis
   ├── routes/       # API Endpoints
   └── server.js     # Entry Point
+/database
+  └── schema.sql    # schema database 
 /frontend
   ├── assets/       # CSS & JS
   └── pages/        # Halaman HTML per Role
