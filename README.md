@@ -6,27 +6,6 @@ Nama Anggota:
 1. Muhammad Dafa 'Izzul Iman A. (24/535342/PA/22711)
 2. Ivan Zuhri Ramadhani Syahrial (24/540342/PA/22939)
 
-### Apa itu `README.md`?
-
-**README.md** adalah file teks dengan format *Markdown* (itu sebabnya berakhiran `.md`) yang akan ditampilkan secara otomatis di halaman depan repository GitHub Anda.
-
-**Fungsinya adalah:**
-
-1. **Identitas:** Memberi tahu orang lain (atau rekruter) apa nama proyek ini.
-2. **Instruksi:** Memberi tahu cara menginstal dan menjalankan program di komputer mereka.
-3. **Dokumentasi:** Menjelaskan fitur-fitur utama dan teknologi yang digunakan.
-4. **Portfolio:** Bagi mahasiswa/developer, README yang rapi menunjukkan profesionalisme.
-
----
-
-### Isi README untuk Proyek SmallBiz
-
-Karena saya sudah tahu detail proyek Anda, saya telah membuatkan **Template README** yang lengkap. Anda tinggal membuat file bernama `README.md` (huruf besar semua), lalu **Copy-Paste** isi di bawah ini ke dalamnya.
-
----
-
-## (Copy dari sini ke bawah)
-
 # 📦 SmallBiz - Inventory Management System
 
 **SmallBiz** adalah aplikasi berbasis web untuk manajemen inventaris dan *Point of Sales* (POS) yang dirancang untuk Usaha Kecil Menengah (UKM). Sistem ini membantu pemilik bisnis memantau stok secara real-time, mencatat transaksi penjualan, dan mengelola pembelian ke supplier dengan akurat.
