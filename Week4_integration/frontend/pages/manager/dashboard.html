@@ -1,298 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard</title>
+    <title>Manager Dashboard - SmallBiz</title>
     <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 <body>
-    <!-- Top Navigation -->
-    <div class="navbar">
-        <h1>📊 Manager Dashboard</h1>
-        <div>
-            <span id="userName"></span>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Manager</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="purchase.html">Purchase</a>
             <button onclick="logout()">Logout</button>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
-        <!-- Alert -->
-        <div id="alert" class="alert" style="display:none"></div>
-
-        <!-- Statistics -->
-        <div class="grid">
-            <div class="stat-card">
-                <h3 id="lowStockCount">0</h3>
-                <p>Low Stock Items</p>
+        <h1>Dashboard Manager</h1>
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left: 5px solid red;">
+                <h3>Low Stock Items</h3>
+                <p class="stat-value" id="lowStockCount">0</p>
+                <small>Perlu segera restock</small>
             </div>
-            <div class="stat-card">
-                <h3 id="totalSuppliers">0</h3>
-                <p>Suppliers</p>
             </div>
-            <div class="stat-card">
-                <h3 id="totalPurchases">0</h3>
-                <p>Total Purchases</p>
-            </div>
-        </div>
-
-        <!-- Low Stock Alert -->
-        <div class="card">
-            <h2 class="card-title">⚠️ Low Stock Products</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Min Stock</th>
-                        <th>Deficit</th>
-                    </tr>
-                </thead>
-                <tbody id="lowStockList">
-                    <tr><td colspan="5" class="loading">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Create Purchase Order -->
-        <div class="card">
-            <h2 class="card-title">📦 Create Purchase Order (Restock)</h2>
-            
-            <form id="purchaseForm">
-                <div class="form-group">
-                    <label>Supplier *</label>
-                    <select id="supplierId" required></select>
-                </div>
-
-                <div class="form-group">
-                    <label>Product to Restock *</label>
-                    <select id="productId" required></select>
-                </div>
-
-                <div class="form-group">
-                    <label>Quantity *</label>
-                    <input type="number" id="quantity" min="1" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Unit Cost (Rp) *</label>
-                    <input type="number" id="unitCost" min="0" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea id="notes" rows="2"></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Create Purchase Order</button>
-            </form>
-        </div>
-
-        <!-- Recent Purchases -->
-        <div class="card">
-            <h2 class="card-title">Recent Purchase Orders</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Date</th>
-                        <th>Supplier</th>
-                        <th>Total Cost</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="purchasesList">
-                    <tr><td colspan="5" class="loading">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 
+    <script src="../../assets/js/auth.js"></script>
     <script>
-        const API_URL = 'http://localhost:3000/api';
-        let products = [];
-        let suppliers = [];
+        checkRole(['Manager', 'Admin']); 
 
-        // Check login
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        if (!token || (user.role !== 'Manager' && user.role !== 'Admin')) {
-            window.location.href = '../../login.html';
-        }
-
-        document.getElementById('userName').textContent = user.username;
-
-        // Show alert
-        function showAlert(message, type = 'success') {
-            const alert = document.getElementById('alert');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 3000);
-        }
-
-        // Load low stock products
         async function loadLowStock() {
-            try {
-                const response = await fetch(`${API_URL}/reports/low-stock`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('lowStockCount').textContent = data.data.length;
-                    
-                    const tbody = document.getElementById('lowStockList');
-                    if (data.data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No low stock items</td></tr>';
-                    } else {
-                        tbody.innerHTML = data.data.map(p => `
-                            <tr>
-                                <td>${p.Product_Name}</td>
-                                <td>${p.Category_Name}</td>
-                                <td><span class="badge badge-warning">${p.Stock_Quantity}</span></td>
-                                <td>${p.Min_Stock_Level}</td>
-                                <td>${p.stock_deficit}</td>
-                            </tr>
-                        `).join('');
-                    }
-                }
-            } catch (error) {
-                showAlert('Failed to load low stock', 'error');
-            }
+            const token = localStorage.getItem('token');
+            // Menggunakan endpoint low-stock yang ada di productRoutes
+            const res = await fetch('http://localhost:3000/api/products/low-stock', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            document.getElementById('lowStockCount').innerText = data.count || 0;
         }
-
-        // Load suppliers
-        async function loadSuppliers() {
-            try {
-                const response = await fetch(`${API_URL}/suppliers`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    suppliers = data.data;
-                    document.getElementById('totalSuppliers').textContent = data.data.length;
-                    
-                    const select = document.getElementById('supplierId');
-                    select.innerHTML = '<option value="">Select Supplier</option>' +
-                        suppliers.map(s => `<option value="${s.Supplier_ID}">${s.Name}</option>`).join('');
-                }
-            } catch (error) {
-                showAlert('Failed to load suppliers', 'error');
-            }
-        }
-
-        // Load products
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_URL}/products`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    products = data.data;
-                    
-                    const select = document.getElementById('productId');
-                    select.innerHTML = '<option value="">Select Product</option>' +
-                        products.map(p => `<option value="${p.Product_ID}">${p.Product_Name} (Stock: ${p.Stock_Quantity})</option>`).join('');
-                }
-            } catch (error) {
-                showAlert('Failed to load products', 'error');
-            }
-        }
-
-        // Load recent purchases
-        async function loadPurchases() {
-            try {
-                const response = await fetch(`${API_URL}/purchases`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalPurchases').textContent = data.count || 0;
-                    
-                    const tbody = document.getElementById('purchasesList');
-                    if (data.data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No purchases yet</td></tr>';
-                    } else {
-                        tbody.innerHTML = data.data.slice(0, 10).map(p => `
-                            <tr>
-                                <td>${p.Purchase_ID}</td>
-                                <td>${new Date(p.Date).toLocaleDateString()}</td>
-                                <td>${p.Supplier_Name}</td>
-                                <td>Rp ${p.Total_Cost.toLocaleString()}</td>
-                                <td>
-                                    <span class="badge badge-${p.Status === 'Completed' ? 'success' : 'warning'}">
-                                        ${p.Status}
-                                    </span>
-                                </td>
-                            </tr>
-                        `).join('');
-                    }
-                }
-            } catch (error) {
-                showAlert('Failed to load purchases', 'error');
-            }
-        }
-
-        // Handle purchase form
-        document.getElementById('purchaseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const purchaseData = {
-                Supplier_ID: parseInt(document.getElementById('supplierId').value),
-                User_ID: user.id,
-                Notes: document.getElementById('notes').value,
-                items: [{
-                    Product_ID: parseInt(document.getElementById('productId').value),
-                    Quantity: parseFloat(document.getElementById('quantity').value),
-                    Unit_Cost: parseFloat(document.getElementById('unitCost').value)
-                }]
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/purchases/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(purchaseData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showAlert('Purchase order created! Stock updated.', 'success');
-                    document.getElementById('purchaseForm').reset();
-                    loadPurchases();
-                    loadLowStock();
-                    loadProducts();
-                } else {
-                    showAlert(data.message || 'Failed to create purchase', 'error');
-                }
-            } catch (error) {
-                showAlert('Error creating purchase', 'error');
-            }
-        });
-
-        // Logout
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '../../login.html';
-        }
-
-        // Initialize
         loadLowStock();
-        loadSuppliers();
-        loadProducts();
-        loadPurchases();
     </script>
 </body>
 </html>

@@ -1,396 +1,131 @@
-// PURCHASE CONTROLLER
-
+// PURCHASE CONTROLLER (COMPLETE & FIXED)
 const { query, transaction } = require('../config/database');
 
-// Get all purchases
+// 1. GET ALL
 const getAllPurchases = async (req, res) => {
   try {
-    const purchases = await query(`
-      SELECT 
-        p.Purchase_ID,
-        p.Date,
-        p.Total_Cost,
-        p.Status,
-        p.Notes,
-        s.Name AS Supplier_Name,
-        u.Username AS Created_By
+    const rows = await query(`
+      SELECT p.*, s.Name as Supplier_Name, u.Username as Created_By
       FROM Purchase p
       JOIN Supplier s ON p.Supplier_ID = s.Supplier_ID
       JOIN User u ON p.User_ID = u.User_ID
-      ORDER BY p.Date DESC
-      LIMIT 100
+      ORDER BY p.Date DESC LIMIT 100
     `);
-    
-    res.json({ 
-      success: true, 
-      count: purchases.length,
-      data: purchases 
-    });
+    res.json({ success: true, count: rows.length, data: rows });
   } catch (error) {
-    console.error('Error fetching purchases:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch purchases',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get single purchase by ID
+// 2. CREATE PURCHASE
+const createPurchase = async (req, res) => {
+  try {
+    const { supplierId, items, totalCost, notes } = req.body;
+    const userId = req.user ? req.user.userId : null;
+
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const purchaseId = await transaction(async (connection) => {
+      // Insert Header
+      const [resPurchase] = await connection.query(
+        `INSERT INTO Purchase (Supplier_ID, User_ID, Date, Total_Cost, Status, Notes) VALUES (?, ?, NOW(), ?, 'Completed', ?)`,
+        [supplierId, userId, totalCost, notes]
+      );
+      const newId = resPurchase.insertId;
+
+      // Insert Details & Add Stock
+      for (const item of items) {
+        await connection.query(
+          `INSERT INTO Purchase_Detail (Purchase_ID, Product_ID, Quantity, Unit_Cost, Subtotal) VALUES (?, ?, ?, ?, ?)`,
+          [newId, item.productId, item.quantity, item.unitCost, item.quantity * item.unitCost]
+        );
+        await connection.query('UPDATE Products SET Stock_Quantity = Stock_Quantity + ? WHERE Product_ID = ?', [item.quantity, item.productId]);
+      }
+      return newId;
+    });
+
+    res.status(201).json({ success: true, message: 'Restock successful', purchaseId });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 3. GET BY ID
 const getPurchaseById = async (req, res) => {
   try {
-    const purchases = await query(`
-      SELECT 
-        p.*,
-        s.Name AS Supplier_Name,
-        s.Contact AS Supplier_Contact,
-        s.Phone AS Supplier_Phone,
-        u.Username AS Created_By
-      FROM Purchase p
-      JOIN Supplier s ON p.Supplier_ID = s.Supplier_ID
-      JOIN User u ON p.User_ID = u.User_ID
-      WHERE p.Purchase_ID = ?
-    `, [req.params.id]);
-    
-    if (purchases.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Purchase not found' 
-      });
-    }
-    
-    res.json({ 
-      success: true, 
-      data: purchases[0]
-    });
+    const rows = await query('SELECT * FROM Purchase WHERE Purchase_ID = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Not found' });
+    res.json({ success: true, data: rows[0] });
   } catch (error) {
-    console.error('Error fetching purchase:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch purchase',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get purchase with full details (items)
+// 4. GET DETAILS
 const getPurchaseDetails = async (req, res) => {
   try {
-    // Get main purchase
-    const purchases = await query(`
-      SELECT 
-        p.*,
-        s.Name AS Supplier_Name,
-        s.Contact AS Supplier_Contact,
-        s.Phone AS Supplier_Phone,
-        u.Username AS Created_By
-      FROM Purchase p
-      JOIN Supplier s ON p.Supplier_ID = s.Supplier_ID
-      JOIN User u ON p.User_ID = u.User_ID
-      WHERE p.Purchase_ID = ?
-    `, [req.params.id]);
-    
-    if (purchases.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Purchase not found' 
-      });
-    }
-    
-    // Get purchase items
-    const items = await query(`
-      SELECT 
-        pd.Detail_ID,
-        pd.Product_ID,
-        pr.Product_Name,
-        pd.Quantity,
-        pd.Unit_Cost,
-        pd.SubTotal,
-        c.Category_Name
-      FROM Purchase_Detail pd
-      JOIN Products pr ON pd.Product_ID = pr.Product_ID
-      JOIN Category c ON pr.Category_ID = c.Category_ID
-      WHERE pd.Purchase_ID = ?
-      ORDER BY pd.Detail_ID
-    `, [req.params.id]);
-    
-    res.json({ 
-      success: true, 
-      data: {
-        purchase: purchases[0],
-        items: items,
-        itemCount: items.length
-      }
-    });
+    const rows = await query(
+      `SELECT pd.*, p.Product_Name FROM Purchase_Detail pd 
+       JOIN Products p ON pd.Product_ID = p.Product_ID 
+       WHERE pd.Purchase_ID = ?`, 
+       [req.params.id]
+    );
+    res.json({ success: true, data: rows });
   } catch (error) {
-    console.error('Error fetching purchase details:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch purchase details',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Create new purchase (RESTOCK)
-const createPurchase = async (req, res) => {
-  const { Supplier_ID, User_ID, Notes, items } = req.body;
-  
+// 5. BY SUPPLIER
+const getPurchasesBySupplier = async (req, res) => {
   try {
-    // Validation
-    if (!Supplier_ID || !User_ID || !items || items.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Supplier ID, User ID, and items are required' 
-      });
-    }
-
-    // Use database transaction
-    const result = await transaction(async (connection) => {
-      // Step 1: Validate all products exist
-      for (const item of items) {
-        const [products] = await connection.query(
-          'SELECT Product_ID, Product_Name FROM Products WHERE Product_ID = ?',
-          [item.Product_ID]
-        );
-        
-        if (products.length === 0) {
-          throw new Error(`Product ID ${item.Product_ID} not found`);
-        }
-        
-        if (item.Quantity <= 0) {
-          throw new Error(`Quantity must be greater than 0 for ${products[0].Product_Name}`);
-        }
-        
-        if (item.Unit_Cost < 0) {
-          throw new Error(`Unit cost cannot be negative for ${products[0].Product_Name}`);
-        }
-      }
-      
-      // Step 2: Calculate total cost
-      let totalCost = 0;
-      for (const item of items) {
-        totalCost += item.Unit_Cost * item.Quantity;
-      }
-      
-      // Step 3: Insert main purchase record
-      const [purchaseResult] = await connection.query(
-        `INSERT INTO Purchase (Date, Total_Cost, Supplier_ID, User_ID, Status, Notes)
-         VALUES (NOW(), ?, ?, ?, 'Completed', ?)`,
-        [totalCost, Supplier_ID, User_ID, Notes || null]
-      );
-      
-      const purchaseId = purchaseResult.insertId;
-      
-      // Step 4: Insert purchase details and INCREASE stock
-      for (const item of items) {
-        const subtotal = item.Unit_Cost * item.Quantity;
-        
-        // Insert detail
-        await connection.query(
-          `INSERT INTO Purchase_Detail (Purchase_ID, Product_ID, Quantity, Unit_Cost, SubTotal)
-           VALUES (?, ?, ?, ?, ?)`,
-          [purchaseId, item.Product_ID, item.Quantity, item.Unit_Cost, subtotal]
-        );
-        
-        // INCREASE stock (opposite of transaction)
-        await connection.query(
-          'UPDATE Products SET Stock_Quantity = Stock_Quantity + ? WHERE Product_ID = ?',
-          [item.Quantity, item.Product_ID]
-        );
-      }
-      
-      return {
-        Purchase_ID: purchaseId,
-        Total_Cost: totalCost,
-        Items_Count: items.length,
-        Date: new Date()
-      };
-    });
-    
-    res.status(201).json({ 
-      success: true, 
-      message: 'Purchase created successfully and stock updated',
-      data: result
-    });
-    
+    const rows = await query('SELECT * FROM Purchase WHERE Supplier_ID = ? ORDER BY Date DESC', [req.params.supplierId]);
+    res.json({ success: true, data: rows });
   } catch (error) {
-    console.error('Purchase creation error:', error);
-    res.status(400).json({ 
-      success: false, 
-      message: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Cancel purchase (remove added stock)
-const cancelPurchase = async (req, res) => {
-  try {
-    // Use database transaction
-    await transaction(async (connection) => {
-      // Get purchase status
-      const [purchases] = await connection.query(
-        'SELECT Status FROM Purchase WHERE Purchase_ID = ?',
-        [req.params.id]
-      );
-      
-      if (purchases.length === 0) {
-        throw new Error('Purchase not found');
-      }
-      
-      if (purchases[0].Status === 'Cancelled') {
-        throw new Error('Purchase is already cancelled');
-      }
-      
-      // Get purchase details to remove stock
-      const [details] = await connection.query(
-        'SELECT Product_ID, Quantity FROM Purchase_Detail WHERE Purchase_ID = ?',
-        [req.params.id]
-      );
-      
-      if (details.length === 0) {
-        throw new Error('Purchase details not found');
-      }
-      
-      // Check if we can remove stock (enough stock available)
-      for (const detail of details) {
-        const [products] = await connection.query(
-          'SELECT Stock_Quantity, Product_Name FROM Products WHERE Product_ID = ?',
-          [detail.Product_ID]
-        );
-        
-        if (products[0].Stock_Quantity < detail.Quantity) {
-          throw new Error(
-            `Cannot cancel: ${products[0].Product_Name} has been sold. ` +
-            `Current stock: ${products[0].Stock_Quantity}, Need to remove: ${detail.Quantity}`
-          );
-        }
-      }
-      
-      // Remove stock for each item
-      for (const detail of details) {
-        await connection.query(
-          'UPDATE Products SET Stock_Quantity = Stock_Quantity - ? WHERE Product_ID = ?',
-          [detail.Quantity, detail.Product_ID]
-        );
-      }
-      
-      // Update purchase status
-      await connection.query(
-        'UPDATE Purchase SET Status = ? WHERE Purchase_ID = ?',
-        ['Cancelled', req.params.id]
-      );
-    });
-    
-    res.json({ 
-      success: true, 
-      message: 'Purchase cancelled and stock adjusted successfully' 
-    });
-    
-  } catch (error) {
-    console.error('Cancel purchase error:', error);
-    res.status(400).json({ 
-      success: false, 
-      message: error.message 
-    });
-  }
-};
-
-// Get purchases by date range
+// 6. DATE RANGE
 const getPurchasesByDateRange = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    
-    if (!startDate || !endDate) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Start date and end date are required' 
-      });
-    }
-
-    const purchases = await query(`
-      SELECT 
-        p.Purchase_ID,
-        p.Date,
-        p.Total_Cost,
-        p.Status,
-        s.Name AS Supplier_Name,
-        u.Username AS Created_By
-      FROM Purchase p
-      JOIN Supplier s ON p.Supplier_ID = s.Supplier_ID
-      JOIN User u ON p.User_ID = u.User_ID
-      WHERE DATE(p.Date) BETWEEN ? AND ?
-      ORDER BY p.Date DESC
-    `, [startDate, endDate]);
-    
-    // Calculate summary
-    const summary = purchases.reduce((acc, p) => {
-      if (p.Status === 'Completed') {
-        acc.totalCost += parseFloat(p.Total_Cost);
-        acc.completedCount++;
-      }
-      return acc;
-    }, { totalCost: 0, completedCount: 0 });
-    
-    res.json({ 
-      success: true,
-      count: purchases.length,
-      data: purchases,
-      summary: {
-        ...summary,
-        totalPurchases: purchases.length,
-        averagePurchase: summary.completedCount > 0 
-          ? summary.totalCost / summary.completedCount 
-          : 0
-      }
-    });
+    const rows = await query('SELECT * FROM Purchase WHERE DATE(Date) BETWEEN ? AND ?', [startDate, endDate]);
+    res.json({ success: true, data: rows });
   } catch (error) {
-    console.error('Error fetching purchases by date:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch purchases',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get purchases by supplier
-const getPurchasesBySupplier = async (req, res) => {
+// 7. CANCEL PURCHASE (Rollback Stock)
+const cancelPurchase = async (req, res) => {
   try {
-    const purchases = await query(`
-      SELECT 
-        p.Purchase_ID,
-        p.Date,
-        p.Total_Cost,
-        p.Status,
-        u.Username AS Created_By
-      FROM Purchase p
-      JOIN User u ON p.User_ID = u.User_ID
-      WHERE p.Supplier_ID = ?
-      ORDER BY p.Date DESC
-    `, [req.params.supplierId]);
-    
-    res.json({ 
-      success: true,
-      count: purchases.length,
-      data: purchases
+    const pId = req.params.id;
+    await transaction(async (connection) => {
+      const [rows] = await connection.query('SELECT Status FROM Purchase WHERE Purchase_ID = ?', [pId]);
+      if (rows.length === 0) throw new Error('Purchase not found');
+      if (rows[0].Status === 'Cancelled') throw new Error('Already cancelled');
+
+      // Kurangi Stok Kembali
+      const [items] = await connection.query('SELECT Product_ID, Quantity FROM Purchase_Detail WHERE Purchase_ID = ?', [pId]);
+      for (const item of items) {
+        await connection.query('UPDATE Products SET Stock_Quantity = Stock_Quantity - ? WHERE Product_ID = ?', [item.Quantity, item.Product_ID]);
+      }
+
+      await connection.query("UPDATE Purchase SET Status = 'Cancelled' WHERE Purchase_ID = ?", [pId]);
     });
+    res.json({ success: true, message: 'Purchase cancelled and stock reverted' });
   } catch (error) {
-    console.error('Error fetching purchases by supplier:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch purchases',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 module.exports = {
   getAllPurchases,
+  createPurchase,
   getPurchaseById,
   getPurchaseDetails,
-  createPurchase,
-  cancelPurchase,
+  getPurchasesBySupplier,
   getPurchasesByDateRange,
-  getPurchasesBySupplier
+  cancelPurchase
 };

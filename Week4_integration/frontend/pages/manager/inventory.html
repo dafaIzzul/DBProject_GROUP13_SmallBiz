@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Management - SmallBiz</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .actions button { margin: 0 2px; padding: 4px 8px; font-size: 0.8rem; }
+    .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">SmallBiz Manager</div>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="inventory.html" class="active">Inventory</a>
+      <a href="purchases.html">Purchases</a>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header-actions">
+      <h1>Inventory Management</h1>
+      </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Min. Level</th>
+          <th>Status</th> </tr>
+      </thead>
+      <tbody id="productsTableBody">
+        <tr><td colspan="7" style="text-align:center;">Loading inventory...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="../../assets/js/api.js"></script>
+  <script>
+    // 1. Cek Login saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '../../login.html';
+        } else {
+            loadProducts();
+        }
+    });
+
+    // 2. Fungsi Load Products
+    async function loadProducts() {
+        const token = localStorage.getItem('token');
+        try {
+            // Panggil API Backend
+            const response = await fetch('http://localhost:3000/api/products', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await response.json();
+
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+
+            if (result.success && result.data.length > 0) {
+                result.data.forEach(product => {
+                    // --- LOGIKA UTAMA PERBAIKAN WARNA ---
+                    // Kita ambil status langsung dari backend (In Stock, Low Stock, Out of Stock)
+                    const statusText = product.Stock_Status; 
+                    let badgeClass = '';
+
+                    // Tentukan warna (CSS Class) berdasarkan TEKS status, bukan angka
+                    if (statusText === 'In Stock') {
+                        badgeClass = 'badge-success'; // Hijau
+                    } else if (statusText === 'Low Stock') {
+                        badgeClass = 'badge-warning'; // Kuning
+                    } else {
+                        badgeClass = 'badge-danger';  // Merah (Out of Stock)
+                    }
+
+                    // Render Baris Tabel
+                    const row = `
+                        <tr>
+                            <td>#${product.Product_ID}</td>
+                            <td>
+                                <strong>${product.Product_Name}</strong><br>
+                                <small style="color:#666">${product.Description || ''}</small>
+                            </td>
+                            <td>${product.Category_Name}</td>
+                            <td>Rp ${parseFloat(product.Price).toLocaleString('id-ID')}</td>
+                            
+                            <td style="font-weight: bold;">${product.Stock_Quantity}</td>
+                            
+                            <td style="color: #666;">${product.Min_Stock_Level}</td>
+                            
+                            <td>
+                                <span class="badge ${badgeClass}">${statusText}</span>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No products found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('productsTableBody').innerHTML = 
+                '<tr><td colspan="7" style="color:red; text-align:center;">Failed to load data</td></tr>';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '../../login.html';
+    }
+  </script>
+</body>
+</html>

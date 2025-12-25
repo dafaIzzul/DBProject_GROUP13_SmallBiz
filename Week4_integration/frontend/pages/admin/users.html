@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="products.html">Products</a>
+            <a href="users.html" class="active">Users</a>
+            <a href="reports.html">Reports</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Manajemen Pengguna</h1>
+        
+        <div style="background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+            <h3>Tambah User Baru</h3>
+            <form id="addUserForm" style="display: flex; gap: 10px;">
+                <input type="text" id="newUsername" placeholder="Username" required>
+                <input type="password" id="newPassword" placeholder="Password" required>
+                <select id="newRole">
+                    <option value="Manager">Manager</option>
+                    <option value="Cashier">Cashier</option>
+                    <option value="Admin">Admin</option>
+                </select>
+                <button type="submit" class="btn-primary">Simpan</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+        </table>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+        checkRole(['Admin']);
+
+        async function loadUsers() {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:3000/api/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            
+            const tbody = document.getElementById('userTable');
+            tbody.innerHTML = '';
+            
+            result.data.forEach(u => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${u.Username}</td>
+                        <td>${u.Role}</td>
+                        <td>${u.Is_Active ? 'Aktif' : 'Non-Aktif'}</td>
+                        <td>
+                            <button onclick="deleteUser(${u.User_ID})">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+
+            const token = localStorage.getItem('token');
+            await fetch('http://localhost:3000/api/users', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ username, password, role })
+            });
+            alert('User berhasil dibuat');
+            loadUsers();
+        });
+
+        async function deleteUser(id) {
+            if(!confirm('Yakin hapus user ini?')) return;
+            const token = localStorage.getItem('token');
+            await fetch(`http://localhost:3000/api/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadUsers();
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

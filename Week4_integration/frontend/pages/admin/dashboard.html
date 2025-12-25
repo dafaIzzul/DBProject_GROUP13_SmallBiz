@@ -1,135 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - SmallBiz</title>
-  <link rel="stylesheet" href="../../assets/css/style.css">
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand">SmallBiz Admin</div>
-    <div class="nav-links">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="products.html">Products</a>
-      <a href="users.html">Users</a>
-      <a href="reports.html">Reports</a>
-      <button onclick="logout()">Logout</button>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="products.html">Products</a>
+            <a href="users.html">Users</a>
+            <a href="reports.html">Reports</a>
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Dashboard Overview</h1>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Pendapatan</h3>
+                <p class="stat-value" id="totalRevenue">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Produk</h3>
+                <p class="stat-value" id="totalProducts">Loading...</p>
+            </div>
+        </div>
     </div>
-  </nav>
-  
-  <div class="container">
-    <h1>Admin Dashboard</h1>
-    <p id="welcome-message"></p>
-    
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Total Revenue</h3>
-        <p class="stat-value" id="totalRevenue">Loading...</p>
-      </div>
-      <div class="stat-card">
-        <h3>Total Products</h3>
-        <p class="stat-value" id="totalProducts">Loading...</p>
-      </div>
-      <div class="stat-card">
-        <h3>Low Stock Items</h3>
-        <p class="stat-value" id="lowStock">Loading...</p>
-      </div>
-      <div class="stat-card">
-        <h3>Total Users</h3>
-        <p class="stat-value" id="totalUsers">Loading...</p>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Recent Transactions</h2>
-      <table id="transactionsTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="transactionsBody">
-          <tr><td colspan="5">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
-  <script src="../../js/auth.js"></script>
-  <script>
-    // Check if user is admin
-    checkRole(['Admin']);
-    
-    const user = getUserInfo();
-    document.getElementById('welcome-message').textContent = `Welcome, ${user.username}!`;
-    
-    // Load dashboard data
-    async function loadDashboard() {
-      const token = localStorage.getItem('token');
-      
-      try {
-        // Load products count
-        const products = await fetch('http://localhost:3000/api/products', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(r => r.json());
+
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/api.js"></script>
+    <script>
+        checkRole(['Admin']); // Proteksi Halaman
         
-        document.getElementById('totalProducts').textContent = products.count || 0;
-        
-        // Load low stock
-        const lowStock = await fetch('http://localhost:3000/api/products/low-stock', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(r => r.json());
-        
-        document.getElementById('lowStock').textContent = lowStock.count || 0;
-        
-        // Load transactions
-        const transactions = await fetch('http://localhost:3000/api/transactions', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(r => r.json());
-        
-        // Calculate total revenue
-        let totalRevenue = 0;
-        if (transactions.data) {
-          totalRevenue = transactions.data
-            .filter(t => t.Status === 'Completed')
-            .reduce((sum, t) => sum + parseFloat(t.Total_Amount), 0);
+        // Simple logic to fetch stats (Mockup logic based on your api)
+        async function loadStats() {
+            try {
+                const products = await fetch('http://localhost:3000/api/products', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }).then(r => r.json());
+                
+                document.getElementById('totalProducts').innerText = products.count || 0;
+                
+                // Note: Total Revenue biasanya butuh endpoint khusus laporan, 
+                // disini kita set placeholder atau hitung manual dari transaksi
+                document.getElementById('totalRevenue').innerText = "Rp -"; 
+            } catch (e) { console.error(e); }
         }
-        
-        document.getElementById('totalRevenue').textContent = 
-          'Rp ' + totalRevenue.toLocaleString('id-ID');
-        
-        // Display recent transactions
-        const tbody = document.getElementById('transactionsBody');
-        tbody.innerHTML = '';
-        
-        transactions.data.slice(0, 10).forEach(t => {
-          const row = `<tr>
-            <td>${t.Transaction_ID}</td>
-            <td>${new Date(t.Date).toLocaleDateString()}</td>
-            <td>${t.Customer_Name || 'Walk-in'}</td>
-            <td>Rp ${parseFloat(t.Total_Amount).toLocaleString('id-ID')}</td>
-            <td><span class="badge badge-${t.Status.toLowerCase()}">${t.Status}</span></td>
-          </tr>`;
-          tbody.innerHTML += row;
-        });
-        
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-      }
-    }
-    
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '../login.html';
-    }
-    
-    loadDashboard();
-  </script>
+        loadStats();
+    </script>
 </body>
 </html>

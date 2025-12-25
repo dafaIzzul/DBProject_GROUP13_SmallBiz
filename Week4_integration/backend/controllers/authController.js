@@ -1,11 +1,9 @@
-// AUTHENTICATION CONTROLLER (PLAIN TEXT PASSWORD)
+// AUTHENTICATION CONTROLLER
 
 const { query } = require('../config/database');
 const jwt = require('jsonwebtoken');
 
-// -------------------------
-// USER LOGIN
-// -------------------------
+
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -33,7 +31,6 @@ const login = async (req, res) => {
 
     const user = users[0];
 
-    // Compare password (PLAIN TEXT - no encryption)
     if (password !== user.Password) {
       return res.status(401).json({
         success: false,

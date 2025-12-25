@@ -274,76 +274,7 @@ function showLoading(show = true) {
     }
 }
 
-// Confirm action
-function confirmAction(message) {
-    return confirm(message);
-}const API_BASE_URL = 'http://localhost:3000/api';
 
-const getToken = () => {
-  return localStorage.getItem('token');
-};
-
-const apiCall = async (endpoint, options = {}) => {
-  const token = getToken();
-  
-  const config = {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers
-    }
-  };
-  
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || 'API call failed');
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
-  }
-};
-
-// Auth API
-const auth = {
-  login: (credentials) => apiCall('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials)
-  }),
-  
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '../login.html';
-  },
-  
-  getCurrentUser: () => apiCall('/auth/me')
-};
-
-// Products API
-const products = {
-  getAll: () => apiCall('/products'),
-  getById: (id) => apiCall(`/products/${id}`),
-  getLowStock: () => apiCall('/products/low-stock'),
-  search: (query) => apiCall(`/products/search/${query}`),
-  create: (data) => apiCall('/products', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  }),
-  update: (id, data) => apiCall(`/products/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data)
-  }),
-  delete: (id) => apiCall(`/products/${id}`, {
-    method: 'DELETE'
-  })
-};
 
 // Transactions API
 const transactions = {

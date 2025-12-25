@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Products - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        /* Tambahan CSS khusus untuk Modal (Popup) */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover { color: black; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="products.html" class="active">Products</a>
+            <a href="users.html">Users</a>
+            <a href="reports.html">Reports</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-actions">
+            <h1>Daftar Produk</h1>
+            <button class="btn-primary" onclick="openModal()">+ Tambah Produk Baru</button>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="productTable">
+                </tbody>
+        </table>
+    </div>
+
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2>Tambah Produk Baru</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="pName" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="pCategory" required>
+                        <option value="">Pilih Kategori...</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="pPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Stok Awal</label>
+                    <input type="number" id="pStock" required>
+                </div>
+                <div class="form-group">
+                    <label>Min. Stok (Alert Level)</label>
+                    <input type="number" id="pMinStock" value="10">
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="pDesc" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%">Simpan Produk</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+        checkRole(['Admin']);
+
+        const token = localStorage.getItem('token');
+
+        // --- 1. LOGIKA LOAD DATA ---
+        async function loadProducts() {
+            try {
+                const res = await fetch('http://localhost:3000/api/products', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const tbody = document.getElementById('productTable');
+                tbody.innerHTML = '';
+                
+                const sortedData = data.data.sort((a, b) => a.Product_ID - b.Product_ID);
+
+                sortedData.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p.Product_ID}</td>
+                            <td>${p.Product_Name}</td>
+                            <td>${p.Category_Name}</td>
+                            <td>Rp ${parseInt(p.Price).toLocaleString('id-ID')}</td>
+                            <td>${p.Stock_Quantity}</td>
+                            <td>
+                                <button onclick="deleteProduct(${p.Product_ID})" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memuat produk");
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const res = await fetch('http://localhost:3000/api/categories', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const select = document.getElementById('pCategory');
+                
+                select.innerHTML = '<option value="">Pilih Kategori...</option>';
+                data.data.forEach(c => {
+                    select.innerHTML += `<option value="${c.Category_ID}">${c.Category_Name}</option>`;
+                });
+            } catch (err) {
+                console.error("Gagal load kategori", err);
+            }
+        }
+
+        // --- 2. LOGIKA MODAL ---
+        const modal = document.getElementById("addProductModal");
+
+        function openModal() {
+            modal.style.display = "block";
+            loadCategories(); 
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+            document.getElementById("addProductForm").reset();
+        }
+
+        // Tutup modal jika klik di luar kotak putih
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // --- 3. LOGIKA TAMBAH & HAPUS ---
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                name: document.getElementById('pName').value,
+                categoryId: document.getElementById('pCategory').value,
+                price: document.getElementById('pPrice').value,
+                stock: document.getElementById('pStock').value,
+                minStock: document.getElementById('pMinStock').value,
+                description: document.getElementById('pDesc').value
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    alert('Produk berhasil ditambahkan!');
+                    closeModal();
+                    loadProducts(); // Refresh tabel
+                } else {
+                    alert('Gagal: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan koneksi');
+            }
+        });
+
+        async function deleteProduct(id) {
+            if(!confirm('Yakin ingin menghapus produk ID ' + id + '?')) return;
+            
+            try {
+                const res = await fetch(`http://localhost:3000/api/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                // Handle jika produk masih ada di stok atau transaksi (Foreign Key Error)
+                const result = await res.json();
+                if (!res.ok) {
+                    alert(result.message || "Gagal menghapus produk (Mungkin sedang digunakan di transaksi/stok).");
+                } else {
+                    loadProducts();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error koneksi");
+            }
+        }
+
+        // Init
+        loadProducts();
+    </script>
+</body>
+</html>

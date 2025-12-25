@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Purchase Order - SmallBiz</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SmallBiz Manager</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="purchases.html" class="active">Purchases</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Riwayat Pembelian (Restock)</h1>
+        <button class="btn-primary" onclick="alert('Fitur Form PO akan muncul disini')">+ Buat Purchase Order</button>
+        <br><br>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID PO</th>
+                    <th>Tanggal</th>
+                    <th>Supplier</th>
+                    <th>Total Biaya</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="purchaseTable"></tbody>
+        </table>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+        checkRole(['Manager', 'Admin']);
+
+        async function loadPurchases() {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:3000/api/purchases', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            const tbody = document.getElementById('purchaseTable');
+            data.data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${p.Purchase_ID}</td>
+                        <td>${new Date(p.Date).toLocaleDateString()}</td>
+                        <td>${p.Supplier_Name}</td>
+                        <td>Rp ${p.Total_Cost}</td>
+                        <td>${p.Status}</td>
+                    </tr>
+                `;
+            });
+        }
+        loadPurchases();
+    </script>
+</body>
+</html>
